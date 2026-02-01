@@ -1,0 +1,29 @@
+/* Page background */
+body {
+    background-color: #f4f6f9;
+    background-image: url("../images/bg.jpg");
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}
+
+/* Table container */
+.container {
+    margin-top: 30px;
+}
+
+/* Buttons */
+.btn {
+    border-radius: 4px;
+}
+
+/* Table header */
+.table thead th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+}
+
+/* Page titles */
+h3 {
+    margin-bottom: 20px;
+}
