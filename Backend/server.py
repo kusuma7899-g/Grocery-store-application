@@ -1,10 +1,10 @@
-from fastapi import FastAPI, Form
+from fastapi import FastAPI, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 from sql_connection import get_sql_connection
 import product_dao
 import order_dao
 import uom_dao
-import json
 
 app = FastAPI()
 
@@ -18,9 +18,21 @@ app.add_middleware(
 
 connection = get_sql_connection()
 
+# ---------------- Pydantic Model ----------------
+class Product(BaseModel):
+    product_name: str
+    uom_id: int
+    price_per_unit: float
+
+# ---------------- APIs ----------------
+
 @app.get("/getUOM")
 def get_uom():
-    return uom_dao.get_uoms(connection)
+    try:
+        return uom_dao.get_uoms(connection)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 @app.get("/getProducts")
 def get_products():
@@ -29,23 +41,28 @@ def get_products():
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/insertProduct")
-def insert_product(data: str = Form(...)):
-    request_payload = json.loads(data)
-    product_id = product_dao.insert_new_product(connection, request_payload)
-    return {"product_id": product_id}
 
-@app.post("/insertOrder")
-def insert_order(data: str = Form(...)):
-    payload = json.loads(data)
-    order_id = order_dao.insert_order(connection, payload)
-    return {"order_id": order_id}
+@app.post("/insertProduct")
+def insert_product(product: Product):
+    try:
+        product_id = product_dao.insert_new_product(connection, product.dict())
+        return {"product_id": product_id}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 @app.get("/getAllOrders")
 def get_all_orders():
-    return order_dao.get_all_orders(connection)
+    try:
+        return order_dao.get_all_orders(connection)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 @app.post("/deleteProduct")
 def delete_product(product_id: int = Form(...)):
-    return_id = product_dao.delete_product(connection, product_id)
-    return {"product_id": return_id}
+    try:
+        return_id = product_dao.delete_product(connection, product_id)
+        return {"product_id": return_id}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
