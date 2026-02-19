@@ -23,8 +23,11 @@ def get_uom():
     return uom_dao.get_uoms(connection)
 
 @app.get("/getProducts")
-def get_products(): 
-    return product_dao.get_all_products(connection)
+def get_products():
+    try:
+        return product_dao.get_all_products(connection)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/insertProduct")
 def insert_product(data: str = Form(...)):
