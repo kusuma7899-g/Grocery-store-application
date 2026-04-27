@@ -1,4 +1,3 @@
-
 // ================= GLOBAL =================
 let productPrices = {};
 let productOptions = "";
@@ -6,20 +5,30 @@ let productOptions = "";
 // ================= PAGE LOAD =================
 $(document).ready(function () {
 
-    // Load products
-    $.get(productListApiUrl, function (products) {
+    // Load products with token
+    $.ajax({
+        method: "GET",
+        url: productListApiUrl,
+        headers: authHeaders(),
+        success: function (products) {
+            let options = '<option value="">-- Select Product --</option>';
 
-        let options = '<option value="">-- Select Product --</option>';
+            products.forEach(p => {
+                options += `<option value="${p.product_id}">${p.product_name}</option>`;
+                productPrices[p.product_id] = p.price_per_unit;
+            });
 
-        products.forEach(p => {
-            options += `<option value="${p.product_id}">${p.product_name}</option>`;
-            productPrices[p.product_id] = p.price_per_unit;
-        });
+            productOptions = options;
 
-        productOptions = options;
-
-        // add first row
-        addRow();
+            // add first row
+            addRow();
+        },
+        error: function (xhr) {
+            if (xhr.status === 401) {
+                alert("Session expired! Please login again.");
+                window.location.href = "login.html";
+            }
+        }
     });
 
     $("#addMoreButton").click(addRow);
@@ -76,17 +85,17 @@ function saveOrder() {
         order_details: []
     };
 
-    // 🔥 ONLY validate rows where product is selected
+    // Only validate rows where product is selected
     $(".product-item").each(function () {
 
         const productId = $(this).find(".cart-product").val();
         const qty       = parseInt($(this).find(".product-qty").val());
         const total     = parseFloat($(this).find(".product-total").val());
 
-        // ✅ ignore empty rows
+        // ignore empty rows
         if (!productId) return;
 
-        // ❌ product selected but qty missing
+        // product selected but qty missing
         if (isNaN(qty) || qty <= 0) {
             alert("⚠️ Quantity required for selected product");
             throw "stop";
@@ -94,7 +103,7 @@ function saveOrder() {
 
         payload.order_details.push({
             product_id: parseInt(productId),
-            quantity: qty,        // backend typo preserved
+            quantity: qty,
             total_price: total
         });
     });
@@ -104,22 +113,24 @@ function saveOrder() {
         return;
     }
 
-    const formData = new FormData();
-    formData.append("data", JSON.stringify(payload));
-
     $.ajax({
         url: orderSaveApiUrl,
-        type: "POST",
-        data: formData,
-        processData: false,
-        contentType: false,
+        method: "POST",
+        headers: authHeaders(),
+        data: JSON.stringify(payload),
+        contentType: "application/json",
         success: function () {
             alert("✅ Order saved successfully");
             window.location.href = "index.html";
         },
-        error: function (err) {
-            console.error(err);
-            alert("❌ Failed to save order");
+        error: function (xhr) {
+            if (xhr.status === 401) {
+                alert("Session expired! Please login again.");
+                window.location.href = "login.html";
+            } else {
+                console.error(xhr.responseText);
+                alert("❌ Failed to save order");
+            }
         }
     });
 }

@@ -1,26 +1,34 @@
 var productModal = $("#productModal");
 
 function loadProducts() {
-    $.get(productListApiUrl, function (response) {
-        let rows = "";
-
-        response.forEach(function (product) {
-            rows += `
-                <tr data-id="${product.product_id}">
-                    <td>${product.product_name}</td>
-
-                    <td>${product.uom_name}</td>
-                    <td>${product.price_per_unit}</td>
-                    <td>
-                        <button class="btn btn-danger btn-sm delete-product">
-                            Delete
-                        </button>
-                    </td>
-                </tr>
-            `;
-        });
-
-        $("#productsTableBody").html(rows);
+    $.ajax({
+        method: "GET",
+        url: productListApiUrl,
+        headers: authHeaders(),
+        success: function (response) {
+            let rows = "";
+            response.forEach(function (product) {
+                rows += `
+                    <tr data-id="${product.product_id}">
+                        <td>${product.product_name}</td>
+                        <td>${product.uom_name}</td>
+                        <td>${product.price_per_unit}</td>
+                        <td>
+                            <button class="btn btn-danger btn-sm delete-product">
+                                Delete
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            $("#productsTableBody").html(rows);
+        },
+        error: function (xhr) {
+            if (xhr.status === 401) {
+                alert("Session expired! Please login again.");
+                window.location.href = "login.html";
+            }
+        }
     });
 }
 
@@ -31,16 +39,27 @@ $(document).ready(function () {
 
     // Load UOMs when modal opens
     productModal.on("show.bs.modal", function () {
-        $.get(uomListApiUrl, function (response) {
-            let options = `<option value="">-- Select --</option>`;
-            response.forEach(function (uom) {
-                options += `
-                    <option value="${uom.uom_id}">
-                        ${uom.uom_name}
-                    </option>
-                `;
-            });
-            $("#uoms").html(options);
+        $.ajax({
+            method: "GET",
+            url: uomListApiUrl,
+            headers: authHeaders(),
+            success: function (response) {
+                let options = `<option value="">-- Select --</option>`;
+                response.forEach(function (uom) {
+                    options += `
+                        <option value="${uom.uom_id}">
+                            ${uom.uom_name}
+                        </option>
+                    `;
+                });
+                $("#uoms").html(options);
+            },
+            error: function (xhr) {
+                if (xhr.status === 401) {
+                    alert("Session expired! Please login again.");
+                    window.location.href = "login.html";
+                }
+            }
         });
     });
 
@@ -64,18 +83,23 @@ $(document).ready(function () {
             return;
         }
 
-        let formData = new FormData();
-        formData.append("data", JSON.stringify(payload));
-
         $.ajax({
             method: "POST",
             url: productSaveApiUrl,
-            data: formData,
-            processData: false,
-            contentType: false,
+            headers: authHeaders(),
+            data: JSON.stringify(payload),
+            contentType: "application/json",
             success: function () {
                 productModal.modal("hide");
                 loadProducts();
+            },
+            error: function (xhr) {
+                if (xhr.status === 401) {
+                    alert("Session expired! Please login again.");
+                    window.location.href = "login.html";
+                } else {
+                    alert("Error saving product!");
+                }
             }
         });
     });
@@ -94,10 +118,19 @@ $(document).ready(function () {
         $.ajax({
             method: "POST",
             url: productDeleteApiUrl,
+            headers: authHeaders(),
             data: formData,
             processData: false,
             contentType: false,
-            success: loadProducts
+            success: loadProducts,
+            error: function (xhr) {
+                if (xhr.status === 401) {
+                    alert("Session expired! Please login again.");
+                    window.location.href = "login.html";
+                } else {
+                    alert("Error deleting product!");
+                }
+            }
         });
     });
 
