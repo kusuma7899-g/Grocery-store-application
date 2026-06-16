@@ -91,4 +91,4 @@ Login again
 
 ## 👩‍💻 Author
 
-Kusuma — Fresher Full Stack Developer
+Kusuma — Fresher Python Developer
