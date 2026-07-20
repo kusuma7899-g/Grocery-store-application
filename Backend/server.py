@@ -41,21 +41,14 @@ def login(form_data: OAuth2PasswordRequestForm = Depends()):
     token = create_access_token(data={"sub": user["username"]})
     return {"access_token": token, "token_type": "bearer"}
 
+
+
 # ---------------- Pydantic Model ----------------
 class Product(BaseModel):
     product_name: str
     uom_id: int
     price_per_unit: float
 
-
-# ---------------- Login Route (Public) ----------------
-@app.post("/login")
-def login(form_data: OAuth2PasswordRequestForm = Depends()):
-    user = authenticate_user(form_data.username, form_data.password)
-    if not user:
-        raise HTTPException(status_code=401, detail="Wrong username or password")
-    token = create_access_token(data={"sub": user["username"]})
-    return {"access_token": token, "token_type": "bearer"}
 
 # ---------------- Protected Routes ----------------
 @app.get("/getUOM")
