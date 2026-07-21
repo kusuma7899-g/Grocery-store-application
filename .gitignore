@@ -1,0 +1,15 @@
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Environment variables
+.env
+**/.env
+
+# VS Code
+.vscode/
+
+# Bootstrap (no need to push to GitHub)
+bootstrap-3.4.1-dist/
