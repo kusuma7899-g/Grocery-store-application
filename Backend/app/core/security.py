@@ -12,11 +12,9 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 30
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
-# ── verify_password must come BEFORE authenticate_user ──
 def verify_password(plain_password, hashed_password):
     return pwd_context.verify(plain_password, hashed_password)
 
-# ── only ONE authenticate_user using database ──
 def authenticate_user(connection, username: str, password: str):
     from user_dao import get_user
     user = get_user(connection, username)
