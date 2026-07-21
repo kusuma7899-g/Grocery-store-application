@@ -16,7 +16,7 @@ def verify_password(plain_password, hashed_password):
     return pwd_context.verify(plain_password, hashed_password)
 
 def authenticate_user(connection, username: str, password: str):
-    from user_dao import get_user
+    from app.dao.user_dao import get_user
     user = get_user(connection, username)
     if not user:
         return None

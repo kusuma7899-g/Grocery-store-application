@@ -13,7 +13,7 @@ class UserRegister(BaseModel):
 
 @router.post("/register")
 def register(user: UserRegister):
-    from user_dao import insert_user
+    from app.dao.user_dao import insert_user
     hashed = pwd_context.hash(user.password)
     insert_user(connection, user.username, hashed)
     return {"message": "User created successfully"}
