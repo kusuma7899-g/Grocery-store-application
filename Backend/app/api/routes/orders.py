@@ -4,7 +4,7 @@ from typing import List
 
 from app.dao import order_dao
 from app.core.security import get_current_user
-from app.core.database import connection
+from app.core.database import get_db
 
 router = APIRouter()
 
@@ -22,9 +22,12 @@ class Order(BaseModel):
 
 
 @router.get("/getAllOrders")
-def get_all_orders(current_user: str = Depends(get_current_user)):
+def get_all_orders(
+    current_user: str = Depends(get_current_user),
+    conn = Depends(get_db)
+):
     try:
-        return order_dao.get_all_orders(connection)
+        return order_dao.get_all_orders(conn)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -32,11 +35,12 @@ def get_all_orders(current_user: str = Depends(get_current_user)):
 @router.post("/insertOrder")
 def insert_order(
     order: Order,
-    current_user: str = Depends(get_current_user)
+    current_user: str = Depends(get_current_user),
+    conn = Depends(get_db)
 ):
     try:
         order_id = order_dao.insert_order(
-            connection,
+            conn,
             order.model_dump()
         )
 
